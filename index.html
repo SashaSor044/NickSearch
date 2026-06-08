@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uqoza Web | Генератор Ніків</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-generate {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: transform 0.1s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+        .btn-generate:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+        .layout {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            flex-wrap: wrap;
+        }
+        .main-panel, .history-panel {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .main-panel {
+            flex: 2;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 300px;
+        }
+        .history-panel {
+            flex: 1;
+            min-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .history-panel h3 { margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .nick-card { margin-bottom: 15px; }
+        .nick-title { font-size: 2rem; font-weight: bold; margin-bottom: 10px; letter-spacing: 1px; }
+        .stats { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; color: var(--text-muted); }
+        .badge { background: #334155; padding: 5px 10px; border-radius: 8px; font-size: 0.9rem; }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .actions a {
+            text-decoration: none;
+            color: white;
+            background-color: #334155;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .actions a:hover { background-color: #475569; }
+        .actions a.tg { background-color: #0ea5e9; }
+        .actions a.fr { background-color: #10b981; }
+        .history-item {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>✨ NICKNAME DROP</h1>
+        <p style="color: var(--text-muted);">Генератор преміальних Telegram юзернеймів</p>
+    </div>
+
+    <button class="btn-generate" onclick="generateAndRender()">🎲 Згенерувати нік</button>
+
+    <div class="layout">
+        <div class="main-panel" id="current-nick">
+            <p style="color: var(--text-muted);">Натисни кнопку вище, щоб знайти свій ідеальний нікнейм.</p>
+        </div>
+
+        <div class="history-panel">
+            <h3>📜 Історія генерацій</h3>
+            <div id="history-list">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Тут будуть збережені твої знахідки.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VOWELS = "aeiouy";
+        const CONSONANTS = "bcdfghjklmnpqrstvwxz";
+        const BAD_LETTERS = ['w', 'x', 'q', 'z', 'j'];
+
+        function getRandomChar(str) {
+            return str.charAt(Math.floor(Math.random() * str.length));
+        }
+
+        function generateCoolName(length) {
+            let name = "";
+            let startWithVowel = Math.random() < 0.5;
+            for (let i = 0; i < length; i++) {
+                if ((i % 2 === 0) === startWithVowel) {
+                    name += getRandomChar(VOWELS);
+                } else {
+                    name += getRandomChar(CONSONANTS);
+                }
+            }
+            return name;
+        }
+
+        function calculateScore(nick) {
+            let penalty = 0;
+            for (let char of nick) {
+                if (BAD_LETTERS.includes(char)) penalty++;
+            }
+            let score = 10 - penalty;
+            let rating = "✨ Хороший";
+            if (score >= 9) rating = "👑 Легенда";
+            else if (score === 8) rating = "💎 Рідкісний";
+            
+            return { score, rating };
+        }
+
+        function generateAndRender() {
+            const nick = generateCoolName(6);
+            const { score, rating } = calculateScore(nick);
+
+            // Оновлюємо головний екран
+            const mainPanel = document.getElementById("current-nick");
+            mainPanel.innerHTML = `
+                <div class="nick-card">
+                    <div class="nick-title">@${nick}</div>
+                    <div class="stats">
+                        <span class="badge">📊 Ліквідність: ${score}/10</span>
+                        <span class="badge">${rating}</span>
+                    </div>
+                    <div class="actions">
+                        <a href="https://t.me/${nick}" target="_blank" class="tg">📱 Telegram</a>
+                        <a href="https://fragment.com/username/${nick}" target="_blank" class="fr">💎 Fragment</a>
+                        <a href="https://t.me/s/${nick}" target="_blank">🌐 Web Check</a>
+                    </div>
+                </div>
+            `;
+
+            // Додаємо в історію
+            const historyList = document.getElementById("history-list");
+            // Прибираємо заглушку, якщо це перший нік
+            if (historyList.innerHTML.includes("Тут будуть збережені")) {
+                historyList.innerHTML = "";
+            }
+            
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+            historyItem.innerHTML = `
+                <span style="font-weight: bold; font-family: monospace;">@${nick}</span>
+                <span style="font-size: 0.8rem; color: #94a3b8;">${score}/10</span>
+            `;
+            
+            // Додаємо новий нік наверх списку
+            historyList.prepend(historyItem);
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
